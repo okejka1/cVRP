@@ -6,11 +6,11 @@ public class Node {
     private int y;
     private int demand;
 
-    public Node(int demand, int x, int y, int id) {
-        this.demand = demand;
+    public Node(int id, int x, int y, int demand) {
+        this.id = id;
         this.x = x;
         this.y = y;
-        this.id = id;
+        this.demand = demand;
     }
 
     public int getId() {

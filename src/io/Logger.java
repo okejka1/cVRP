@@ -16,13 +16,12 @@ public class Logger {
         BufferedReader reader = new BufferedReader(new FileReader(path));
         String line;
         String name = "";
-        String ProblemType = "";
         int capacity = 0;
         List<Node> cities = new ArrayList<>();
         Map<Integer, Integer> demandMap = new HashMap<>();
         int depotId = -1;
 
-        enum Section { NONE, NODE_COORD, DEMAND, DEPOT }
+        enum Section {NONE, NODE_COORD, DEMAND, DEPOT}
         Section current = Section.NONE;
 
         while ((line = reader.readLine()) != null) {
@@ -31,8 +30,6 @@ public class Logger {
 
             if (line.startsWith("NAME")) {
                 name = line.split(":")[1].trim();
-            } else if (line.startsWith("TYPE")) {
-                    capacity = Integer.parseInt(line.split(":")[1].trim());
             } else if (line.startsWith("CAPACITY")) {
                 capacity = Integer.parseInt(line.split(":")[1].trim());
             } else if (line.startsWith("NODE_COORD_SECTION")) {
@@ -72,16 +69,16 @@ public class Logger {
         }
         reader.close();
 
-//        // Assign demands
-//        for (Node city : cities) {
-//            if (demandMap.containsKey(city.getId())) {
-//                city = new City(city.getId(), city.getX(), city.getY(), demandMap.get(city.getId()));
-//            }
-//        }
-//
-//        return new Instance(name, capacity, cities, depotId);
-//    }
-        return null;
+        // Assign demands
+        for (int i = 0; i < cities.size(); i++) {
+            Node city = cities.get(i);
+            Integer demand = demandMap.get(city.getId());
+            if (demand != null) {
+                cities.set(i, new Node(city.getId(), city.getX(), city.getY(), demand));
+            }
+        }
 
+        return new Instance(name, capacity, cities, depotId);
     }
+
 }
