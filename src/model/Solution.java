@@ -30,22 +30,26 @@ public class Solution {
 
     public int calculateCost(Instance instance) {
         int totalCost = 0;
+        int depotId = instance.getDepotId();
 
         for (List<Integer> route : routes) {
-            int depotId = instance.getDepotId();
-            totalCost += instance.getDistance(depotId, route.getFirst());
-            for (int i = 0; i < route.size(); i++) {
-                int fromId = route.get(i);
-                int toId = route.get(i + 1);
-                totalCost += instance.getDistance(fromId, toId);
-            }
-            totalCost += instance.getDistance(route.getLast(), depotId);
+            if (route.isEmpty()) continue;
 
+            int prev = depotId;
+
+            // depot → first → ... → last → depot
+            for (int cityId : route) {
+                totalCost += instance.getDistance(prev, cityId);
+                prev = cityId;
+            }
+
+            totalCost += instance.getDistance(prev, depotId);
         }
 
         this.cost = totalCost;
         return totalCost;
     }
+
 
 
     public void printSolution() {
