@@ -3,9 +3,8 @@ package algorithm;
 import model.Instance;
 import model.Solution;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.security.SecureRandom;
+import java.util.*;
 
 public class Genetic extends BaseAlgorithm {
 
@@ -23,18 +22,20 @@ public class Genetic extends BaseAlgorithm {
         this.maxGenerations = maxGenerations;
     }
 
-    private Solution selectParent(int tourParam) {
+    private Solution selectParent(int tourSize, List<Solution> currentGeneration) {
+        SecureRandom secureRandom = new SecureRandom();
+        Set<Solution> parentCandidates = new HashSet<>();
 
-        Solution bestParent;
+        while (parentCandidates.size() < Math.min(tourSize, currentGeneration.size())) {
+            Solution candidate = currentGeneration.get(secureRandom.nextInt(currentGeneration.size()));
+            parentCandidates.add(candidate);
+        }
 
-
-
-
-
-
-
-        return null;
+        // Select the best
+        return Collections.max(parentCandidates, Comparator.comparing(Solution::getFitness));
     }
+
+
 
 
 
