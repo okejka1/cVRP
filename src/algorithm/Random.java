@@ -44,9 +44,6 @@ public class Random extends BaseAlgorithm {
             routes.add(new ArrayList<>(currentRoute));
         }
 
-        Solution sol = new Solution(routes);
-        sol.calculateCost(instance);
-
-        return sol;
+        return new Solution(routes, instance);  // calculates cost during initialization
     }
 }

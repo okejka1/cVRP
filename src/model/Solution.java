@@ -5,10 +5,14 @@ import java.util.List;
 public class Solution {
     private List<List<Integer>> routes;
     private int cost;
+    private double fitness;
 
-    public Solution(List<List<Integer>> routes) {
+
+
+    public Solution(List<List<Integer>> routes, Instance instance) {
         this.routes = routes;
-        this.cost = Integer.MAX_VALUE;
+        this.cost = calculateCost(instance);
+        this.fitness = calculateFitness();
     }
 
     public List<List<Integer>> getRoutes() {
@@ -50,6 +54,10 @@ public class Solution {
         return totalCost;
     }
 
+    public double calculateFitness() {
+        fitness = 1.0 / cost;
+        return fitness;
+    }
 
 
     public void printSolution() {
@@ -62,4 +70,16 @@ public class Solution {
         }
         System.out.println("Cost " + cost);
     }
+
+    public double getFitness() {
+        return fitness;
+    }
+
+    public void printCost() {
+        System.out.println("Cost " + cost);
+        System.out.println("Fitness " + fitness);
+        System.out.println();
+    }
+
+
 }
