@@ -114,4 +114,9 @@ public class Solution {
         return Objects.equals(routes, solution.routes);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(routes);
+    }
+
 }

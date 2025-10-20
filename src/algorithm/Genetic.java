@@ -219,11 +219,12 @@ public class Genetic extends BaseAlgorithm {
 
         bestSolution = currentGeneration.getFirst();
 
-
+        int counterBestSolutionPlateu = 0;
 
         for (int currentGenerationCounter = 0; currentGenerationCounter < maxGenerations; currentGenerationCounter++) {
             int elitismSolutionsCounter = (int) Math.round(elitismFactor * populationSize); // number of Solutions to be taken to next generation
             List<Solution> newGeneration = new ArrayList<>(currentGeneration.subList(0, elitismSolutionsCounter));
+            Set<Solution> uniqueSolutions = new HashSet<>(newGeneration);
 
             while (newGeneration.size() < populationSize) {
                 Solution parent1 = selectParent(currentGeneration);
@@ -231,7 +232,7 @@ public class Genetic extends BaseAlgorithm {
 
                 Solution child;
                 if (Math.random() < crossoverFactor) {
-                    child = routeBasedCrossover(parent1, parent2, instance);
+                    child = OXCrossover(parent1, parent2, instance);
                 } else {
                     child = new Solution(parent1);
                 }
@@ -241,9 +242,7 @@ public class Genetic extends BaseAlgorithm {
                     child = swapMutation(child, instance);
                 }
 
-                // Add only if not already in population
-                Solution finalChild = child;
-                if (newGeneration.stream().noneMatch(s -> s.getRoutes().equals(finalChild.getRoutes()))) {
+                if (uniqueSolutions.add(child)) {
                     newGeneration.add(child);
                 }
             }
@@ -254,12 +253,19 @@ public class Genetic extends BaseAlgorithm {
             // --- Update best solution ---
             if (newGeneration.getFirst().getFitness() > bestSolution.getFitness()) {
                 bestSolution = newGeneration.getFirst();
-            }
+                counterBestSolutionPlateu = 0;
 
+            }
+            counterBestSolutionPlateu++;
             // Replace old population
             currentGeneration = newGeneration;
+            if(counterBestSolutionPlateu > 60) {
+                System.out.println("Have not improved since: " + counterBestSolutionPlateu + " generations");
+                bestSolution.printCost();
+            }
 
             System.out.println("Current generation:" + currentGenerationCounter);
+
         }
 
         return bestSolution;
