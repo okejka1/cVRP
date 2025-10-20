@@ -107,16 +107,5 @@ public class Solution {
         return true;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Solution solution)) return false;
-        return Objects.equals(routes, solution.routes);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(routes);
-    }
 
 }
