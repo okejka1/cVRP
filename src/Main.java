@@ -1,6 +1,7 @@
 import algorithm.Genetic;
 import algorithm.Greedy;
 import algorithm.Random;
+import algorithm.SimulatedAnnealing;
 import io.Logger;
 import model.Instance;
 import model.Solution;
@@ -33,10 +34,13 @@ public class Main {
         sol2.printSolution();
         List<Solution> results = new ArrayList<>(10);
         for(int i = 0; i < 10; i++) {
-            Genetic genetic = new Genetic(instance, 400,0.7,0.2,0.1, 1000, 5);
-            Solution sol = genetic.runAlgorithm();
+//            Genetic genetic = new Genetic(instance, 500,0.7,0.2,0.05, 1000, 7);
+//            Solution sol = genetic.runAlgorithm();
+            SimulatedAnnealing simulatedAnnealing = new SimulatedAnnealing(instance, 10000, 1, 0.995, 200);
+            Solution sol = simulatedAnnealing.runAlgorithm();
             results.add(sol);
         }
+
         int total = 0;
         for(Solution sol: results) {
             sol.printCost();
@@ -45,10 +49,7 @@ public class Main {
         int mean = total / results.size();
 
         System.out.println("Mean:" + mean);
-//        Genetic genetic = new Genetic(instance, 500,0.7,0.1,0.1, 1000, 10);
-//        Solution sol = genetic.runAlgorithm();
-//        sol.printCost();
-//        sol.printSolution();
 
     }
+
 }

@@ -64,29 +64,9 @@ public class Genetic extends BaseAlgorithm {
         if (mutatedSolution.isSolutionValid(instance))
             return mutatedSolution;
 
-        return innerRouteSwapMutation(solution, instance);
-    }
-
-    private Solution innerRouteSwapMutation(Solution solution, Instance instance) {
-        Solution mutated = new Solution(solution); // deep copy
-        List<List<Integer>> routes = mutated.getRoutes();
-
-        int routeIndex = rand.nextInt(routes.size());
-        List<Integer> route = routes.get(routeIndex);
-
-        if (!(route.size() < 2)) {
-
-            int i = rand.nextInt(route.size());
-            int j = (i + 1 + rand.nextInt(route.size() - 1)) % route.size();
-            Collections.swap(route, i, j);
-
-            mutated.calculateCost(instance);
-            mutated.calculateFitness();
-
-            return mutated;
-        }
         return solution;
     }
+
 
 
 
@@ -134,65 +114,6 @@ public class Genetic extends BaseAlgorithm {
         offspring.calculateFitness();
 
         return offspring;
-    }
-
-    private Solution routeBasedCrossover(Solution parent1, Solution parent2, Instance instance) {
-        List<List<Integer>> p1Routes = parent1.getRoutes();
-        List<List<Integer>> childRoutes = new ArrayList<>();
-
-        Set<Integer> used = new HashSet<>();
-
-        for (List<Integer> route : p1Routes) {
-            if (rand.nextDouble() < 0.4) {
-                childRoutes.add(new ArrayList<>(route));
-                used.addAll(route);
-            }
-        }
-
-        List<Integer> remainingCustomers = parent2.getRoutes().stream()
-                .flatMap(List::stream)
-                .filter(c -> !used.contains(c))
-                .toList();
-
-        List<List<Integer>> newRoutes = greedySplit(remainingCustomers, instance);
-
-        childRoutes.addAll(newRoutes);
-
-        Solution offspring = new Solution(parent1); // inherit structure
-        offspring.setRoutes(childRoutes);
-        offspring.calculateCost(instance);
-        offspring.calculateFitness();
-
-        return offspring;
-    }
-
-
-
-    private List<List<Integer>> greedySplit(List<Integer> sequence, Instance instance) {
-        List<List<Integer>> routes = new ArrayList<>();
-        List<Integer> currentRoute = new ArrayList<>();
-        int currentLoad = 0;
-
-        for (int customerId : sequence) {
-            int demand = instance.getCities().get(customerId - 1).getDemand(); // IDs are 1-based
-
-            if (currentLoad + demand <= instance.getTruckCapacity()) {
-                currentRoute.add(customerId);
-                currentLoad += demand;
-            } else {
-                routes.add(new ArrayList<>(currentRoute));
-                currentRoute.clear();
-                currentRoute.add(customerId);
-                currentLoad = demand;
-            }
-        }
-
-        // Add the last route
-        if (!currentRoute.isEmpty()) {
-            routes.add(currentRoute);
-        }
-
-        return routes;
     }
 
 
