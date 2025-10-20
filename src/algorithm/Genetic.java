@@ -17,8 +17,8 @@ public class Genetic extends BaseAlgorithm {
 
     private final SecureRandom rand = new SecureRandom();
 
-
-    public Genetic(Instance instance, int populationSize, double crossoverFactor, double mutationFactor, double elitismFactor, int maxGenerations, int tour) {
+    public Genetic(Instance instance, int populationSize, double crossoverFactor, double mutationFactor,
+                   double elitismFactor, int maxGenerations, int tour) {
         super(instance);
         this.populationSize = populationSize;
         this.crossoverFactor = crossoverFactor;
@@ -28,123 +28,107 @@ public class Genetic extends BaseAlgorithm {
         this.tour = tour;
     }
 
-    private Solution selectParent( List<Solution> currentGeneration) {
 
+    private Solution selectParent(List<Solution> currentGeneration) {
         Set<Solution> parentCandidates = new HashSet<>();
         while (parentCandidates.size() < Math.min(tour, currentGeneration.size())) {
             Solution candidate = currentGeneration.get(rand.nextInt(currentGeneration.size()));
             parentCandidates.add(candidate);
         }
-
-        return Collections.max(parentCandidates, Comparator.comparing(Solution::getFitness));
-    }
-
-    // Gene mutation
-    private Solution swapMutation(Solution solution, Instance instance) {
-
-        Solution mutatedSolution = new Solution(solution); // deep copy
-        List<List<Integer>> routes = mutatedSolution.getRoutes();
-
-        int routeIndexA = rand.nextInt(routes.size());
-        int routeIndexB = rand.nextInt(routes.size());
-
-        int posA = rand.nextInt(routes.get(routeIndexA).size());
-        int posB = rand.nextInt(routes.get(routeIndexB).size());
-
-        Integer firstCustomerId = routes.get(routeIndexA).get(posA);
-        Integer secondCustomerId = routes.get(routeIndexB).get(posB);
-
-        routes.get(routeIndexA).set(posA, secondCustomerId);
-        routes.get(routeIndexB).set(posB, firstCustomerId);
-
-        mutatedSolution.setRoutes(routes);
-        mutatedSolution.calculateCost(instance);
-        mutatedSolution.calculateFitness();
-
-        if (mutatedSolution.isSolutionValid(instance))
-            return mutatedSolution;
-
-        return solution;
+        return Collections.min(parentCandidates, Comparator.comparing(Solution::getCost));
     }
 
 
+    private Solution enhancedMutation(Solution solution, Instance instance) {
+        Solution mutated = new Solution(solution); // deep copy
+        List<Integer> flatList = new ArrayList<>(mutated.getRoutes().stream().flatMap(List::stream).toList());
 
+        if (rand.nextBoolean()) {
+            // Swap two positions
+            int i = rand.nextInt(flatList.size());
+            int j = rand.nextInt(flatList.size());
+            int tmp = flatList.get(i);
+            flatList.set(i, flatList.get(j));
+            flatList.set(j, tmp);
+        } else {
+            // Invert a segment
+            int start = rand.nextInt(flatList.size());
+            int end = rand.nextInt(flatList.size());
+            if (start > end) { int tmp = start; start = end; end = tmp; }
+            List<Integer> subList = flatList.subList(start, end + 1);
+            Collections.reverse(subList);
+        }
 
+        List<List<Integer>> newRoutes = greedySplit(flatList, instance);
+        mutated.setRoutes(newRoutes);
+        mutated.calculateCost(instance);
+        mutated.calculateFitness();
+        return mutated;
+    }
 
     private Solution OXCrossover(Solution parent1, Solution parent2, Instance instance) {
+        List<Integer> p1 = parent1.getRoutes().stream().flatMap(List::stream).toList();
+        List<Integer> p2 = parent2.getRoutes().stream().flatMap(List::stream).toList();
+        int size = p1.size();
 
-        // Flatten both parents (ignore depot)
-        List<Integer> p1Flat = parent1.getRoutes().stream().flatMap(List::stream).toList();
-        List<Integer> p2Flat = parent2.getRoutes().stream().flatMap(List::stream).toList();
-        int size = p1Flat.size();
-
-        // Random segment boundaries
         int start = rand.nextInt(size);
         int end = rand.nextInt(size);
+        if (start > end) { int tmp = start; start = end; end = tmp; }
 
-        if (start > end) {
-            int tmp = start;
-            start = end;
-            end = tmp;
-        }
-
-        List<Integer> flattenOffspring = new ArrayList<>(Collections.nCopies(size, -1));
-
+        List<Integer> childSeq = new ArrayList<>(Collections.nCopies(size, -1));
         Set<Integer> used = new HashSet<>();
+
+        // Copy segment from parent1
         for (int i = start; i <= end; i++) {
-            flattenOffspring.set(i, p1Flat.get(i));
-            used.add(p1Flat.get(i));
+            childSeq.set(i, p1.get(i));
+            used.add(p1.get(i));
         }
 
-        int currentIndex = (end + 1) % size;
+        // Fill remaining positions from parent2
+        int idx = (end + 1) % size;
         for (int i = 0; i < size; i++) {
-            int candidateId = p2Flat.get((end + 1 + i) % size);
-            if (!used.contains(candidateId)) {
-                flattenOffspring.set(currentIndex, candidateId);
-                used.add(candidateId);
-                currentIndex = (currentIndex + 1) % size;
+            int gene = p2.get((end + 1 + i) % size);
+            if (!used.contains(gene)) {
+                childSeq.set(idx, gene);
+                used.add(gene);
+                idx = (idx + 1) % size;
             }
         }
 
-        List<List<Integer>> newRoutes = greedySplit(flattenOffspring, instance);
-
-        Solution offspring = new Solution(parent1);
-        offspring.setRoutes(newRoutes);
-        offspring.calculateCost(instance);
-        offspring.calculateFitness();
-
-        return offspring;
+        List<List<Integer>> newRoutes = greedySplit(childSeq, instance);
+        Solution child = new Solution(parent1);
+        child.setRoutes(newRoutes);
+        child.calculateCost(instance);
+        child.calculateFitness();
+        return child;
     }
 
 
     @Override
     public Solution runAlgorithm() {
-        // init
-        Solution bestSolution;
-        List<Solution> currentGeneration = new ArrayList<>(populationSize);
-
+        // --- Initialize Population ---
+        List<Solution> currentGeneration = new ArrayList<>();
         for (int i = 0; i < populationSize; i++) {
             Solution solution;
             if (i == 0) {
                 Greedy greedy = new Greedy(instance);
                 solution = greedy.runAlgorithm();
             } else {
-                Random random = new Random(instance);
-                solution = random.runAlgorithm();
+                Random randomAlg = new Random(instance);
+                solution = randomAlg.runAlgorithm();
             }
             currentGeneration.add(solution);
         }
-        // sort
-        currentGeneration = currentGeneration.stream()
-                .sorted(Comparator.comparingDouble(Solution::getFitness).reversed()).toList();
 
-        bestSolution = currentGeneration.getFirst();
+        currentGeneration.sort(Comparator.comparingInt(Solution::getCost));
+        Solution bestSolution = currentGeneration.get(0);
 
-        int counterBestSolutionPlateu = 0;
+        int counterBestSolutionPlateau = 0;
 
-        for (int currentGenerationCounter = 0; currentGenerationCounter < maxGenerations; currentGenerationCounter++) {
-            int elitismSolutionsCounter = (int) Math.round(elitismFactor * populationSize); // number of Solutions to be taken to next generation
-            List<Solution> newGeneration = new ArrayList<>(currentGeneration.subList(0, elitismSolutionsCounter));
+        // --- Main GA Loop ---
+        for (int generation = 0; generation < maxGenerations; generation++) {
+            int elitismCount = (int) Math.round(elitismFactor * populationSize);
+            List<Solution> newGeneration = new ArrayList<>(currentGeneration.subList(0, elitismCount));
             Set<Solution> uniqueSolutions = new HashSet<>(newGeneration);
 
             while (newGeneration.size() < populationSize) {
@@ -158,9 +142,8 @@ public class Genetic extends BaseAlgorithm {
                     child = new Solution(parent1);
                 }
 
-                // Mutation
                 if (Math.random() < mutationFactor) {
-                    child = swapMutation(child, instance);
+                    child = enhancedMutation(child, instance);
                 }
 
                 if (uniqueSolutions.add(child)) {
@@ -168,25 +151,32 @@ public class Genetic extends BaseAlgorithm {
                 }
             }
 
-            // --- Sort next generation ---
-            newGeneration.sort(Comparator.comparingDouble(Solution::getFitness).reversed());
+//            // --- Inject Random Diversity ---
+//            if (generation % 50 == 0) {
+//                for (int i = 0; i < populationSize / 10; i++) {
+//                    Random randomAlg = new Random(instance);
+//                    Solution randomSolution = randomAlg.runAlgorithm();
+//                    newGeneration.add(randomSolution);
+//                }
+//            }
 
-            // --- Update best solution ---
-            if (newGeneration.getFirst().getFitness() > bestSolution.getFitness()) {
+            newGeneration.sort(Comparator.comparingInt(Solution::getCost));
+
+            if (newGeneration.getFirst().getCost() < bestSolution.getCost()) {
                 bestSolution = newGeneration.getFirst();
-                counterBestSolutionPlateu = 0;
-
+                counterBestSolutionPlateau = 0;
+            } else {
+                counterBestSolutionPlateau++;
             }
-            counterBestSolutionPlateu++;
-            // Replace old population
+
             currentGeneration = newGeneration;
-            if(counterBestSolutionPlateu > 60) {
-                System.out.println("Have not improved since: " + counterBestSolutionPlateu + " generations");
+
+            if (counterBestSolutionPlateau > 60) {
+                System.out.println("No improvement for " + counterBestSolutionPlateau + " generations");
                 bestSolution.printCost();
             }
 
-            System.out.println("Current generation:" + currentGenerationCounter);
-
+            System.out.println("Generation: " + generation + " Best Cost: " + bestSolution.getCost());
         }
 
         return bestSolution;

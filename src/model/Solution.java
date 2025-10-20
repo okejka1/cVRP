@@ -68,7 +68,7 @@ public class Solution {
     }
 
     public double calculateFitness() {
-        fitness = 1.0 / cost;
+        fitness = 1.0/ cost;
         return fitness;
     }
 

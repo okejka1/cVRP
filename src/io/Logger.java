@@ -1,8 +1,10 @@
 package io;
 import model.Instance;
 import model.Node;
+import model.Solution;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,6 +82,28 @@ public class Logger {
 
         return new Instance(name, capacity, cities, depotId);
     }
+
+
+    public static List<Instance> loadAllFromDirectory(String dirPath) throws IOException {
+        List<Instance> instances = new ArrayList<>();
+
+        File folder = new File(dirPath);
+        File[] files = folder.listFiles(( file) -> file.getName().toLowerCase().endsWith(".vrp"));
+
+        if (files == null || files.length == 0) {
+            System.err.println("No .vrp files found in: " + dirPath);
+            return instances;
+        }
+
+        for (File file : files) {
+            Instance instance = loadFromFile(file.getPath());
+            instances.add(instance);
+        }
+
+        return instances;
+    }
+
+
 
 
 
