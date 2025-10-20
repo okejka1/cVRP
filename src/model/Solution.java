@@ -1,14 +1,31 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Solution {
     private List<List<Integer>> routes;
     private int cost;
+    private double fitness;
 
-    public Solution(List<List<Integer>> routes) {
+
+
+    public Solution(List<List<Integer>> routes, Instance instance) {
         this.routes = routes;
-        this.cost = Integer.MAX_VALUE;
+        this.cost = calculateCost(instance);
+        this.fitness = calculateFitness();
+    }
+
+    // Deep copy constructor
+    public Solution(Solution other) {
+        this.routes = new ArrayList<>();
+        for (List<Integer> route : other.routes) {
+            this.routes.add(new ArrayList<>(route));
+        }
+
+        this.cost = other.cost;
+        this.fitness = other.fitness;
     }
 
     public List<List<Integer>> getRoutes() {
@@ -50,16 +67,56 @@ public class Solution {
         return totalCost;
     }
 
+    public double calculateFitness() {
+        fitness = 1.0 / cost;
+        return fitness;
+    }
 
 
     public void printSolution() {
         for (int i = 0; i < routes.size(); i++) {
             System.out.print("Route #" + (i + 1) + ": ");
             for (int nodeId : routes.get(i)) {
-                System.out.print(nodeId + " ");
+                System.out.print(nodeId - 1 + " ");
             }
             System.out.println();
         }
         System.out.println("Cost " + cost);
     }
+
+    public double getFitness() {
+        return fitness;
+    }
+
+    public void printCost() {
+        System.out.println("Cost " + cost);
+        System.out.println("Fitness " + fitness);
+        System.out.println();
+    }
+
+
+    public boolean isSolutionValid(Instance instance) {
+        for (List<Integer> route : routes) {
+            int currentCapacity = 0;
+            for (Integer cityId : route)
+                currentCapacity += instance.getCities().get(cityId - 1).getDemand(); // ids are 1-based
+
+            if (currentCapacity > instance.getTruckCapacity())
+                return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Solution solution)) return false;
+        return Objects.equals(routes, solution.routes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(routes);
+    }
+
 }

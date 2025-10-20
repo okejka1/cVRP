@@ -37,7 +37,7 @@ public class Node {
         this.y = y;
     }
 
-    public int          getDemand() {
+    public int getDemand() {
         return demand;
     }
 

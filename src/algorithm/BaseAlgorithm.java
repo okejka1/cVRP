@@ -12,4 +12,5 @@ public abstract class BaseAlgorithm implements IAlgorithm {
     public Instance getInstance() {
         return instance;
     }
+
 }

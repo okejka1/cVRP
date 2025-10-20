@@ -63,9 +63,7 @@ public class Greedy extends BaseAlgorithm {
             routes.add(route);
         }
 
-        Solution sol = new Solution(routes);
-        sol.calculateCost(instance);
-        return sol;
+        return new Solution(routes, instance);  // calculates cost during initialization
     }
 
 
