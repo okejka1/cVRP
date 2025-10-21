@@ -78,14 +78,12 @@ public class SimulatedAnnealing extends BaseAlgorithm {
 
     private Solution generateNeighbor(Solution solution) {
         Solution neighbor = new Solution(solution);
-
         List<Integer> flatList = new ArrayList<>(neighbor.getRoutes().stream().flatMap(List::stream).toList());
 
         flatList = perfomSwapOnFlatList(flatList, rand);
 
         neighbor.setRoutes(greedySplit(flatList, instance));
         neighbor.calculateCost(instance);
-//        neighbor.calculateFitness();
 
         return neighbor;
     }

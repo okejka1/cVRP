@@ -33,12 +33,6 @@ public class Main {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-
-
-
-
-
         }
     }
 
@@ -68,7 +62,7 @@ public class Main {
                 break;
             case GA:
                 for (int i = 0; i < 10; i++) {
-                    Genetic genetic = new Genetic(instance, ConfigRunnerType.NO_EVALUATION, 500, 0.8, 0.2, 0.1, 10000, 7);
+                    Genetic genetic = new Genetic(instance, ConfigRunnerType.EVALUATION_FILE, 500, 0.8, 0.3, 0.05, 10000, 20);
                     Solution solution = genetic.runAlgorithm();
                     solutions.add(solution);
                 }

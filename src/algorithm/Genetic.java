@@ -59,7 +59,6 @@ public class Genetic extends BaseAlgorithm {
         List<List<Integer>> newRoutes = greedySplit(flatList, instance);
         mutated.setRoutes(newRoutes);
         mutated.calculateCost(instance);
-//        mutated.calculateFitness();
         return mutated;
     }
 
@@ -100,7 +99,6 @@ public class Genetic extends BaseAlgorithm {
         Solution child = new Solution(parent1);
         child.setRoutes(newRoutes);
         child.calculateCost(instance);
-//        child.calculateFitness();
         return child;
     }
 
@@ -169,7 +167,7 @@ public class Genetic extends BaseAlgorithm {
             }
 
 //            // --- Inject Random Diversity ---
-//            if (generation % 2000 == 0) {
+//            if (generation % 1000 == 0) {
 //                for (int i = 0; i < populationSize / 10; i++) {
 //                    Random randomAlg = new Random(instance);
 //                    Solution randomSolution = randomAlg.runAlgorithm();
