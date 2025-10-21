@@ -106,7 +106,6 @@ public class Genetic extends BaseAlgorithm {
 
     @Override
     public Solution runAlgorithm() {
-        // --- Initialize Population ---
         List<Solution> currentGeneration = new ArrayList<>();
         for (int i = 0; i < populationSize; i++) {
             Solution solution;
@@ -125,7 +124,7 @@ public class Genetic extends BaseAlgorithm {
 
         int counterBestSolutionPlateau = 0;
 
-        // --- Main GA Loop ---
+
         for (int generation = 0; generation < maxGenerations; generation++) {
             int elitismCount = (int) Math.round(elitismFactor * populationSize);
             List<Solution> newGeneration = new ArrayList<>(currentGeneration.subList(0, elitismCount));

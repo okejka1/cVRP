@@ -1,12 +1,10 @@
 package io;
 import model.Instance;
 import model.Node;
+import model.ResultSummary;
 import model.Solution;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -101,6 +99,27 @@ public class Logger {
         }
 
         return instances;
+    }
+
+    public static void saveInstanceResultsToCSV(String instanceName, List<ResultSummary> summaries) throws IOException {
+        String dir = "src/io/output/";  // or any folder you like
+        new File(dir).mkdirs();          // make sure the folder exists
+        String fileName = dir + instanceName + ".csv";
+        FileWriter writer = new FileWriter(fileName);
+
+        writer.append("\nAlgorithm,Best,Worst,Average,Std\n");
+        for (ResultSummary summary : summaries) {
+            writer.append(String.format("%s,%.2f,%.2f,%.2f,%.2f\n",
+                    summary.getAlgorithmName(),
+                    summary.getBest(),
+                    summary.getWorst(),
+                    summary.getAvg(),
+                    summary.getStd()));
+        }
+
+        writer.flush();
+        writer.close();
+        System.out.println("Saved results to " + fileName);
     }
 
 

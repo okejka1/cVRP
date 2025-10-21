@@ -13,10 +13,6 @@ public abstract class BaseAlgorithm implements IAlgorithm {
         this.instance = instance;
     }
 
-    public Instance getInstance() {
-        return instance;
-    }
-
     protected List<List<Integer>> greedySplit(List<Integer> sequence, Instance instance) {
         List<List<Integer>> routes = new ArrayList<>();
         List<Integer> currentRoute = new ArrayList<>();
@@ -36,7 +32,6 @@ public abstract class BaseAlgorithm implements IAlgorithm {
             }
         }
 
-        // Add the last route
         if (!currentRoute.isEmpty()) {
             routes.add(currentRoute);
         }
@@ -45,12 +40,11 @@ public abstract class BaseAlgorithm implements IAlgorithm {
     }
 
     protected Solution generateNeighbor(Solution solution) {
-        // Deep copy
         Solution neighbor = new Solution(solution);
 
-        List<Integer> flatList =  new ArrayList<>(neighbor.getRoutes().stream().flatMap(List::stream).toList());
+        List<Integer> flatList = new ArrayList<>(neighbor.getRoutes().stream().flatMap(List::stream).toList());
 
-        // Pick two random positions to swap
+
         int i = (int) (Math.random() * flatList.size());
         int j = (int) (Math.random() * flatList.size());
 
@@ -66,7 +60,6 @@ public abstract class BaseAlgorithm implements IAlgorithm {
 
         return neighbor;
     }
-
 
 
 }
