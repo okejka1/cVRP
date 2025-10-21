@@ -1,8 +1,11 @@
 package algorithm;
 
+import io.Logger;
 import model.Instance;
 import model.Solution;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.*;
 
@@ -14,18 +17,21 @@ public class Genetic extends BaseAlgorithm {
     private double crossoverFactor;
     private double elitismFactor;
     private int tour;
+    private ConfigRunnerType configRunnerType;
 
     private final SecureRandom rand = new SecureRandom();
 
-    public Genetic(Instance instance, int populationSize, double crossoverFactor, double mutationFactor,
+    public Genetic(Instance instance, ConfigRunnerType configRunnerType, int populationSize, double crossoverFactor, double mutationFactor,
                    double elitismFactor, int maxGenerations, int tour) {
         super(instance);
+        this.configRunnerType = configRunnerType;
         this.populationSize = populationSize;
         this.crossoverFactor = crossoverFactor;
         this.mutationFactor = mutationFactor;
         this.elitismFactor = elitismFactor;
         this.maxGenerations = maxGenerations;
         this.tour = tour;
+
     }
 
 
@@ -39,30 +45,21 @@ public class Genetic extends BaseAlgorithm {
     }
 
 
-    private Solution enhancedMutation(Solution solution, Instance instance) {
-        Solution mutated = new Solution(solution); // deep copy
+    private Solution mutate(Solution solution, Instance instance) {
+        Solution mutated = new Solution(solution);
         List<Integer> flatList = new ArrayList<>(mutated.getRoutes().stream().flatMap(List::stream).toList());
 
-        if (rand.nextBoolean()) {
-            // Swap two positions
-            int i = rand.nextInt(flatList.size());
-            int j = rand.nextInt(flatList.size());
-            int tmp = flatList.get(i);
-            flatList.set(i, flatList.get(j));
-            flatList.set(j, tmp);
-        } else {
-            // Invert a segment
-            int start = rand.nextInt(flatList.size());
-            int end = rand.nextInt(flatList.size());
-            if (start > end) { int tmp = start; start = end; end = tmp; }
-            List<Integer> subList = flatList.subList(start, end + 1);
-            Collections.reverse(subList);
-        }
+        if (rand.nextBoolean())
+            // swap mutation
+            flatList = perfomSwapOnFlatList(flatList, rand);
+        else
+            // inversion mutation
+            flatList = performInversionOnFlatList(flatList, rand);
 
         List<List<Integer>> newRoutes = greedySplit(flatList, instance);
         mutated.setRoutes(newRoutes);
         mutated.calculateCost(instance);
-        mutated.calculateFitness();
+//        mutated.calculateFitness();
         return mutated;
     }
 
@@ -73,7 +70,11 @@ public class Genetic extends BaseAlgorithm {
 
         int start = rand.nextInt(size);
         int end = rand.nextInt(size);
-        if (start > end) { int tmp = start; start = end; end = tmp; }
+        if (start > end) {
+            int tmp = start;
+            start = end;
+            end = tmp;
+        }
 
         List<Integer> childSeq = new ArrayList<>(Collections.nCopies(size, -1));
         Set<Integer> used = new HashSet<>();
@@ -99,13 +100,18 @@ public class Genetic extends BaseAlgorithm {
         Solution child = new Solution(parent1);
         child.setRoutes(newRoutes);
         child.calculateCost(instance);
-        child.calculateFitness();
+//        child.calculateFitness();
         return child;
     }
 
 
     @Override
     public Solution runAlgorithm() {
+        FileWriter evalWriter = null;
+        if (this.configRunnerType == ConfigRunnerType.EVALUATION_FILE) {
+            evalWriter = Logger.createEvaluationFile(instance.getName(), AlgorithmType.GA);
+        }
+
         List<Solution> currentGeneration = new ArrayList<>();
         for (int i = 0; i < populationSize; i++) {
             Solution solution;
@@ -122,7 +128,19 @@ public class Genetic extends BaseAlgorithm {
         currentGeneration.sort(Comparator.comparingInt(Solution::getCost));
         Solution bestSolution = currentGeneration.get(0);
 
-        int counterBestSolutionPlateau = 0;
+        double best = currentGeneration.getFirst().getCost();
+        double worst = currentGeneration.getLast().getCost();
+        double avg = currentGeneration.stream().mapToDouble(Solution::getCost).average().getAsDouble();
+
+
+        if (evalWriter != null && configRunnerType.equals(ConfigRunnerType.EVALUATION_FILE)) {
+            try {
+                Logger.logGeneration(evalWriter, 0, best, avg, worst);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+//        int counterBestSolutionPlateau = 0;
 
 
         for (int generation = 0; generation < maxGenerations; generation++) {
@@ -142,7 +160,7 @@ public class Genetic extends BaseAlgorithm {
                 }
 
                 if (Math.random() < mutationFactor) {
-                    child = enhancedMutation(child, instance);
+                    child = mutate(child, instance);
                 }
 
                 if (uniqueSolutions.add(child)) {
@@ -151,7 +169,7 @@ public class Genetic extends BaseAlgorithm {
             }
 
 //            // --- Inject Random Diversity ---
-//            if (generation % 50 == 0) {
+//            if (generation % 2000 == 0) {
 //                for (int i = 0; i < populationSize / 10; i++) {
 //                    Random randomAlg = new Random(instance);
 //                    Solution randomSolution = randomAlg.runAlgorithm();
@@ -161,21 +179,38 @@ public class Genetic extends BaseAlgorithm {
 
             newGeneration.sort(Comparator.comparingInt(Solution::getCost));
 
-            if (newGeneration.getFirst().getCost() < bestSolution.getCost()) {
+            if (newGeneration.getFirst().getCost() < bestSolution.getCost())
                 bestSolution = newGeneration.getFirst();
-                counterBestSolutionPlateau = 0;
-            } else {
-                counterBestSolutionPlateau++;
+//                counterBestSolutionPlateau = 0;
+//            } else {
+//              counterBestSolutionPlateau++;
+//            }
+
+            if (evalWriter != null && configRunnerType.equals(ConfigRunnerType.EVALUATION_FILE)) {
+                try {
+                    best = newGeneration.getFirst().getCost();
+                    worst = newGeneration.getLast().getCost();
+                    avg = newGeneration.stream().mapToDouble(Solution::getCost).average().getAsDouble();
+                    Logger.logGeneration(evalWriter, generation + 1, best, avg, worst);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             currentGeneration = newGeneration;
 
-            if (counterBestSolutionPlateau > 60) {
-                System.out.println("No improvement for " + counterBestSolutionPlateau + " generations");
-                bestSolution.printCost();
-            }
-
+//            if (counterBestSolutionPlateau > 60) {
+//                System.out.println("No improvement for " + counterBestSolutionPlateau + " generations");
+//                bestSolution.printCost();
+//            }
+//
             System.out.println("Generation: " + generation + " Best Cost: " + bestSolution.getCost());
+
+        }
+        try {
+            if (evalWriter != null) evalWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         return bestSolution;

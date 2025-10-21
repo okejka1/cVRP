@@ -1,4 +1,6 @@
 package io;
+import algorithm.AlgorithmType;
+import algorithm.BaseAlgorithm;
 import model.Instance;
 import model.Node;
 import model.ResultSummary;
@@ -102,11 +104,15 @@ public class Logger {
     }
 
     public static void saveInstanceResultsToCSV(String instanceName, List<ResultSummary> summaries) throws IOException {
-        String dir = "src/io/output/";  // or any folder you like
-        new File(dir).mkdirs();          // make sure the folder exists
+        String dir = "src/io/output/";
+        File folder = new File(dir);
+
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
         String fileName = dir + instanceName + ".csv";
         FileWriter writer = new FileWriter(fileName);
-
+        writer.write(instanceName);
         writer.append("\nAlgorithm,Best,Worst,Average,Std\n");
         for (ResultSummary summary : summaries) {
             writer.append(String.format("%s,%.2f,%.2f,%.2f,%.2f\n",
@@ -123,6 +129,30 @@ public class Logger {
     }
 
 
+    public static FileWriter createEvaluationFile(String instanceName, AlgorithmType algorithmType) {
+        String dir = "src/io/output/" + algorithmType.name() + "/";
+        File folder = new File(dir);
+        FileWriter writer;
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+        String fileName = dir + instanceName + " " + algorithmType.name() + ".csv";
+        try {
+            writer = new FileWriter(fileName, false);
+            writer.write("generation;best;average;worst\n");
+            writer.flush();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+            return null;
+        }
+        return writer;
+
+    }
+
+    public static void logGeneration(FileWriter writer, int generation, double best, double avg, double worst) throws IOException {
+        writer.write(String.format("%d;%.2f;%.2f;%.2f%n", generation, best, avg, worst));
+        writer.flush();
+    }
 
 
 

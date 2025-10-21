@@ -4,32 +4,42 @@ import model.Instance;
 import model.ResultSummary;
 import model.Solution;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Main {
-    public static void main(String[] args) throws IOException {
-        System.out.println("Test:");
+    public static void main(String[] args) {
+
+        final String directory = "src/io/input/";
+        List<Instance> instances = List.of();
+        try {
+            instances = Logger.loadAllFromDirectory(directory);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
-        String directory = "src/io/input/";
-        List<Instance> instances = Logger.loadAllFromDirectory(directory);
+        for (Instance instance : instances) {
+            ResultSummary randomRes = testInstance(instance, AlgorithmType.RANDOM);
+            ResultSummary greedyRes = testInstance(instance, AlgorithmType.GREEDY);
+            ResultSummary saRes = testInstance(instance, AlgorithmType.SA);
+            ResultSummary gaRes = testInstance(instance, AlgorithmType.GA);
 
-        Instance instance = instances.get(0);
-        ResultSummary randomRes = testInstance(instance, AlgorithmType.RANDOM);
-        ResultSummary greedyRes = testInstance(instance, AlgorithmType.GREEDY);
-        ResultSummary saRes = testInstance(instance, AlgorithmType.SA);
-        ResultSummary gaRes = testInstance(instance, AlgorithmType.GA);
+            List<ResultSummary> allSummaries = List.of(randomRes, greedyRes, saRes, gaRes);
 
-        // Print summary
-        System.out.println(randomRes);
-        System.out.println(greedyRes);
-        System.out.println(saRes);
-        System.out.println(gaRes);
+            try {
+                Logger.saveInstanceResultsToCSV(instance.getName(), allSummaries);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
+
+
+
+
+
+        }
     }
 
     private static ResultSummary testInstance(Instance instance, AlgorithmType algorithmType) {
@@ -58,14 +68,13 @@ public class Main {
                 break;
             case GA:
                 for (int i = 0; i < 10; i++) {
-                    Genetic genetic = new Genetic(instance, 200, 0.9, 0.5, 0.1, 10000,6);
+                    Genetic genetic = new Genetic(instance, ConfigRunnerType.NO_EVALUATION, 500, 0.8, 0.2, 0.1, 10000, 7);
                     Solution solution = genetic.runAlgorithm();
                     solutions.add(solution);
                 }
                 break;
         }
 
-        // Compute statistics
         double best = solutions.stream().mapToDouble(Solution::getCost).min().orElse(Double.NaN);
         double worst = solutions.stream().mapToDouble(Solution::getCost).max().orElse(Double.NaN);
         double avg = solutions.stream().mapToDouble(Solution::getCost).average().orElse(Double.NaN);
@@ -76,5 +85,4 @@ public class Main {
         String algoName = algorithmType.name();
         return new ResultSummary(instance.getName(), algoName, best, worst, avg, std, solutions);
     }
-
 }
