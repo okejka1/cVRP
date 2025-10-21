@@ -1,9 +1,10 @@
 package algorithm;
 
 import model.Instance;
-import model.Solution;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class BaseAlgorithm implements IAlgorithm {
@@ -11,10 +12,6 @@ public abstract class BaseAlgorithm implements IAlgorithm {
 
     public BaseAlgorithm(Instance instance) {
         this.instance = instance;
-    }
-
-    public Instance getInstance() {
-        return instance;
     }
 
     protected List<List<Integer>> greedySplit(List<Integer> sequence, Instance instance) {
@@ -36,7 +33,6 @@ public abstract class BaseAlgorithm implements IAlgorithm {
             }
         }
 
-        // Add the last route
         if (!currentRoute.isEmpty()) {
             routes.add(currentRoute);
         }
@@ -44,29 +40,38 @@ public abstract class BaseAlgorithm implements IAlgorithm {
         return routes;
     }
 
-    protected Solution generateNeighbor(Solution solution) {
-        // Deep copy
-        Solution neighbor = new Solution(solution);
+    protected List<Integer> perfomSwapOnFlatList(List<Integer> sequence, SecureRandom secureRandom) {
+        List<Integer> flatList = new ArrayList<>(sequence);
+        int i, j;
+        do {
+            i = secureRandom.nextInt(sequence.size());
+            j = secureRandom.nextInt(sequence.size());
 
-        List<Integer> flatList =  new ArrayList<>(neighbor.getRoutes().stream().flatMap(List::stream).toList());
+        } while (i == j);
 
-        // Pick two random positions to swap
-        int i = (int) (Math.random() * flatList.size());
-        int j = (int) (Math.random() * flatList.size());
-
-        // Swap
-        int temp = flatList.get(i);
+        Integer tmp = flatList.get(i);
         flatList.set(i, flatList.get(j));
-        flatList.set(j, temp);
+        flatList.set(j, tmp);
 
-        // Split back into routes respecting truck capacity
-        neighbor.setRoutes(greedySplit(flatList, instance));
-        neighbor.calculateCost(instance);
-        neighbor.calculateFitness();
+        return flatList;
 
-        return neighbor;
     }
 
+    protected List<Integer> performInversionOnFlatList(List<Integer> sequence, SecureRandom secureRandom) {
+        List<Integer> flatList = new ArrayList<>(sequence);
+        int start = secureRandom.nextInt(flatList.size());
+        int end = secureRandom.nextInt(flatList.size());
+        if (start > end) {
+            int tmp = start;
+            start = end;
+            end = tmp;
+        }
+        List<Integer> subList = flatList.subList(start, end + 1);
+        Collections.reverse(subList);
+
+        return flatList;
+
+    }
 
 
 }

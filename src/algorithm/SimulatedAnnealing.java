@@ -3,15 +3,18 @@ package algorithm;
 import model.Instance;
 import model.Solution;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SimulatedAnnealing extends BaseAlgorithm {
 
-    private double maxTemp;
-    private double minTemp;
-    private double coolingRate;
-    private int neighbourCheckCount;
+    private final double maxTemp;
+    private final double minTemp;
+    private final double coolingRate;
+    private final int neighbourCheckCount;
+
+    private final SecureRandom rand = new SecureRandom();
 
     public SimulatedAnnealing(Instance instance, double maxTemp, double minTemp, double coolingRate, int neighbourCheckCount) {
         super(instance);
@@ -71,6 +74,20 @@ public class SimulatedAnnealing extends BaseAlgorithm {
             currentTemp *= coolingRate;
         }
         return bestSolution;
+    }
+
+    private Solution generateNeighbor(Solution solution) {
+        Solution neighbor = new Solution(solution);
+
+        List<Integer> flatList = new ArrayList<>(neighbor.getRoutes().stream().flatMap(List::stream).toList());
+
+        flatList = perfomSwapOnFlatList(flatList, rand);
+
+        neighbor.setRoutes(greedySplit(flatList, instance));
+        neighbor.calculateCost(instance);
+//        neighbor.calculateFitness();
+
+        return neighbor;
     }
 
 }

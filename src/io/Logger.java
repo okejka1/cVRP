@@ -1,10 +1,12 @@
 package io;
+import algorithm.AlgorithmType;
+import algorithm.BaseAlgorithm;
 import model.Instance;
 import model.Node;
+import model.ResultSummary;
+import model.Solution;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,6 +81,77 @@ public class Logger {
         }
 
         return new Instance(name, capacity, cities, depotId);
+    }
+
+
+    public static List<Instance> loadAllFromDirectory(String dirPath) throws IOException {
+        List<Instance> instances = new ArrayList<>();
+
+        File folder = new File(dirPath);
+        File[] files = folder.listFiles(( file) -> file.getName().toLowerCase().endsWith(".vrp"));
+
+        if (files == null || files.length == 0) {
+            System.err.println("No .vrp files found in: " + dirPath);
+            return instances;
+        }
+
+        for (File file : files) {
+            Instance instance = loadFromFile(file.getPath());
+            instances.add(instance);
+        }
+
+        return instances;
+    }
+
+    public static void saveInstanceResultsToCSV(String instanceName, List<ResultSummary> summaries) throws IOException {
+        String dir = "src/io/output/";
+        File folder = new File(dir);
+
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+        String fileName = dir + instanceName + ".csv";
+        FileWriter writer = new FileWriter(fileName);
+        writer.write(instanceName);
+        writer.append("\nAlgorithm,Best,Worst,Average,Std\n");
+        for (ResultSummary summary : summaries) {
+            writer.append(String.format("%s,%.2f,%.2f,%.2f,%.2f\n",
+                    summary.getAlgorithmName(),
+                    summary.getBest(),
+                    summary.getWorst(),
+                    summary.getAvg(),
+                    summary.getStd()));
+        }
+
+        writer.flush();
+        writer.close();
+        System.out.println("Saved results to " + fileName);
+    }
+
+
+    public static FileWriter createEvaluationFile(String instanceName, AlgorithmType algorithmType) {
+        String dir = "src/io/output/" + algorithmType.name() + "/";
+        File folder = new File(dir);
+        FileWriter writer;
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+        String fileName = dir + instanceName + " " + algorithmType.name() + ".csv";
+        try {
+            writer = new FileWriter(fileName, false);
+            writer.write("generation;best;average;worst\n");
+            writer.flush();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+            return null;
+        }
+        return writer;
+
+    }
+
+    public static void logGeneration(FileWriter writer, int generation, double best, double avg, double worst) throws IOException {
+        writer.write(String.format("%d;%.2f;%.2f;%.2f%n", generation, best, avg, worst));
+        writer.flush();
     }
 
 
