@@ -78,16 +78,16 @@ public class Genetic extends BaseAlgorithm {
         List<Integer> childSeq = new ArrayList<>(Collections.nCopies(size, -1));
         Set<Integer> used = new HashSet<>();
 
-        // Copy segment from parent1
+        // copy segment from parent1
         for (int i = start; i <= end; i++) {
             childSeq.set(i, p1.get(i));
             used.add(p1.get(i));
         }
 
-        // Fill remaining positions from parent2
+        // fill remaining positions from parent2
         int idx = (end + 1) % size;
         for (int i = 0; i < size; i++) {
-            int gene = p2.get((end + 1 + i) % size);
+            int gene = p2.get((i));
             if (!used.contains(gene)) {
                 childSeq.set(idx, gene);
                 used.add(gene);
@@ -124,11 +124,11 @@ public class Genetic extends BaseAlgorithm {
         }
 
         currentGeneration.sort(Comparator.comparingInt(Solution::getCost));
-        Solution bestSolution = currentGeneration.get(0);
+        Solution bestSolution = currentGeneration.getFirst();
 
         double best = currentGeneration.getFirst().getCost();
         double worst = currentGeneration.getLast().getCost();
-        double avg = currentGeneration.stream().mapToDouble(Solution::getCost).average().getAsDouble();
+        double avg = currentGeneration.stream().mapToDouble(Solution::getCost).average().orElse(Double.NaN);
 
 
         if (evalWriter != null && configRunnerType.equals(ConfigRunnerType.EVALUATION_FILE)) {
@@ -147,8 +147,13 @@ public class Genetic extends BaseAlgorithm {
             Set<Solution> uniqueSolutions = new HashSet<>(newGeneration);
 
             while (newGeneration.size() < populationSize) {
-                Solution parent1 = selectParent(currentGeneration);
-                Solution parent2 = selectParent(currentGeneration);
+                Solution parent1;
+                Solution parent2;
+                do {
+                    parent1 = selectParent(currentGeneration);
+                    parent2 = selectParent(currentGeneration);
+                } while (parent1.equals(parent2));
+
 
                 Solution child;
                 if (Math.random() < crossoverFactor) {
@@ -166,7 +171,6 @@ public class Genetic extends BaseAlgorithm {
                 }
             }
 
-//            // --- Inject Random Diversity ---
 //            if (generation % 1000 == 0) {
 //                for (int i = 0; i < populationSize / 10; i++) {
 //                    Random randomAlg = new Random(instance);
@@ -188,7 +192,7 @@ public class Genetic extends BaseAlgorithm {
                 try {
                     best = newGeneration.getFirst().getCost();
                     worst = newGeneration.getLast().getCost();
-                    avg = newGeneration.stream().mapToDouble(Solution::getCost).average().getAsDouble();
+                    avg = newGeneration.stream().mapToDouble(Solution::getCost).average().orElse(Double.NaN);
                     Logger.logGeneration(evalWriter, generation + 1, best, avg, worst);
                 } catch (IOException e) {
                     e.printStackTrace();

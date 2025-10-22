@@ -62,7 +62,7 @@ public class Main {
                 break;
             case GA:
                 for (int i = 0; i < 10; i++) {
-                    Genetic genetic = new Genetic(instance, ConfigRunnerType.EVALUATION_FILE, 500, 0.8, 0.3, 0.05, 10000, 20);
+                    Genetic genetic = new Genetic(instance, ConfigRunnerType.EVALUATION_FILE, 500, 0.8, 0.3, 0.05, 8000, 15);
                     Solution solution = genetic.runAlgorithm();
                     solutions.add(solution);
                 }

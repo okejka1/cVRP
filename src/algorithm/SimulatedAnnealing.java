@@ -58,8 +58,7 @@ public class SimulatedAnnealing extends BaseAlgorithm {
                 if (delta < 0) {
                     currentSolution = neighbor; // accept better solution
                 } else {
-                    // Accept worse solution with probability
-                    double prob = Math.exp(-delta / currentTemp);
+                    double prob = Math.exp(-delta / currentTemp); // Accept worse solution with probability
                     if (Math.random() < prob) {
                         currentSolution = neighbor;
                     }
@@ -70,8 +69,7 @@ public class SimulatedAnnealing extends BaseAlgorithm {
                 }
             }
 
-            // Cool down
-            currentTemp *= coolingRate;
+            currentTemp *= coolingRate; // Cool down
         }
         return bestSolution;
     }
@@ -80,7 +78,10 @@ public class SimulatedAnnealing extends BaseAlgorithm {
         Solution neighbor = new Solution(solution);
         List<Integer> flatList = new ArrayList<>(neighbor.getRoutes().stream().flatMap(List::stream).toList());
 
-        flatList = perfomSwapOnFlatList(flatList, rand);
+        if(rand.nextBoolean())
+            flatList = perfomSwapOnFlatList(flatList, rand);
+        else
+            flatList = performInversionOnFlatList(flatList, rand);
 
         neighbor.setRoutes(greedySplit(flatList, instance));
         neighbor.calculateCost(instance);

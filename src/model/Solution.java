@@ -14,6 +14,12 @@ public class Solution {
         this.cost = calculateCost(instance);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Solution solution)) return false;
+        return cost == solution.cost && Objects.equals(routes, solution.routes);
+    }
+
     // Deep copy constructor
     public Solution(Solution other) {
         this.routes = new ArrayList<>();
