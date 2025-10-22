@@ -136,7 +136,8 @@ public class Logger {
         if (!folder.exists()) {
             folder.mkdirs();
         }
-        String fileName = dir + instanceName + " " + algorithmType.name() + ".csv";
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String fileName = dir + instanceName + "_" + algorithmType.name() + "_" + timestamp + ".csv";
         try {
             writer = new FileWriter(fileName, false);
             writer.write("generation;best;average;worst\n");

@@ -7,14 +7,17 @@ import java.util.Objects;
 public class Solution {
     private List<List<Integer>> routes;
     private int cost;
-//    private double fitness;
-
 
 
     public Solution(List<List<Integer>> routes, Instance instance) {
         this.routes = routes;
         this.cost = calculateCost(instance);
-//        this.fitness = calculateFitness();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Solution solution)) return false;
+        return cost == solution.cost && Objects.equals(routes, solution.routes);
     }
 
     // Deep copy constructor
@@ -25,7 +28,6 @@ public class Solution {
         }
 
         this.cost = other.cost;
-//        this.fitness = other.fitness;
     }
 
     public List<List<Integer>> getRoutes() {
@@ -67,12 +69,6 @@ public class Solution {
         return totalCost;
     }
 
-//    public double calculateFitness() {
-//        fitness = 1.0 / cost;
-//        return fitness;
-//    }
-
-
     public void printSolution() {
         for (int i = 0; i < routes.size(); i++) {
             System.out.print("Route #" + (i + 1) + ": ");
@@ -87,7 +83,6 @@ public class Solution {
 
     public void printCost() {
         System.out.println("Cost " + cost);
-//        System.out.println("Fitness " + fitness);
         System.out.println();
     }
 
