@@ -27,23 +27,6 @@ public class SimulatedAnnealing extends BaseAlgorithm {
     @Override
     public Solution runAlgorithm() {
 
-//        1. Initialize:
-//        - Cooling schedule, maximum and minimum temperatures (Tmax, Tmin)
-//                - Generate an initial solution s0
-//        - Set the current solution s = s0
-//                - Set the starting temperature T = Tmax
-//
-//        2. Repeat until T <= Tmin:
-//        a. Repeat until a condition is met at each temperature:
-//        - Generate a neighboring solution s'
-//                - Calculate the change in cost (∆E) between s' and s
-//                - If ∆E ≤ 0, accept the new solution s' as the current solution s
-//                - Otherwise, accept s' with a probability proportional to e^(-∆E/T)
-//        b. Decrease the temperature T = α * T (cooling step)
-//
-//        3. Output the best solution found
-
-        // Start from a greedy solution
         Greedy greedy = new Greedy(instance);
         Solution currentSolution = greedy.runAlgorithm();
         Solution bestSolution = new Solution(currentSolution);
@@ -58,7 +41,7 @@ public class SimulatedAnnealing extends BaseAlgorithm {
                 if (delta < 0) {
                     currentSolution = neighbor; // accept better solution
                 } else {
-                    double prob = Math.exp(-delta / currentTemp); // Accept worse solution with probability
+                    double prob = Math.exp(-delta / currentTemp); // accept worse solution with probability
                     if (Math.random() < prob) {
                         currentSolution = neighbor;
                     }
@@ -69,7 +52,7 @@ public class SimulatedAnnealing extends BaseAlgorithm {
                 }
             }
 
-            currentTemp *= coolingRate; // Cool down
+            currentTemp *= coolingRate; // cool down
         }
         return bestSolution;
     }
