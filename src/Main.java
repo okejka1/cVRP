@@ -26,6 +26,7 @@ public class Main {
             ResultSummary saRes = testInstance(instance, AlgorithmType.SA);
             ResultSummary gaRes = testInstance(instance, AlgorithmType.GA);
 
+//          testOneInstance(instance, AlgorithmType.GA);
             List<ResultSummary> allSummaries = List.of(randomRes, greedyRes, saRes, gaRes);
 
             try {
@@ -34,6 +35,18 @@ public class Main {
                 e.printStackTrace();
             }
         }
+    }
+
+    private static void testOneInstance(Instance instance, AlgorithmType algorithmType) {
+        switch (algorithmType) {
+            case GA:
+                Genetic genetic = new Genetic(instance, ConfigRunnerType.EVALUATION_FILE, 200, 0.8, 0.4, 0.05, 3200, 6);
+                genetic.runAlgorithm();
+                break;
+            default:
+                break;
+        }
+
     }
 
     private static ResultSummary testInstance(Instance instance, AlgorithmType algorithmType) {
@@ -62,7 +75,7 @@ public class Main {
                 break;
             case GA:
                 for (int i = 0; i < 10; i++) {
-                    Genetic genetic = new Genetic(instance, ConfigRunnerType.EVALUATION_FILE, 500, 0.8, 0.3, 0.05, 8000, 15);
+                    Genetic genetic = new Genetic(instance, ConfigRunnerType.NO_EVALUATION, 500, 0.8, 0.3, 0.05, 8000, 15);
                     Solution solution = genetic.runAlgorithm();
                     solutions.add(solution);
                 }

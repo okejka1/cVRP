@@ -44,7 +44,7 @@ public class Instance {
         return distanceMatrix[fromId - 1][toId - 1];  // IDs are 1-based in .vrp files
     }
 
-    public void printDistanceMatrix(int [][] distanceMatrix) {
+    public void printDistanceMatrix(int[][] distanceMatrix) {
         for (int i = 0; i < cities.size(); i++) {
             for (int j = 0; j < cities.size(); j++) {
                 System.out.print(distanceMatrix[i][j] + " ");

@@ -138,8 +138,6 @@ public class Genetic extends BaseAlgorithm {
                 e.printStackTrace();
             }
         }
-//        int counterBestSolutionPlateau = 0;
-
 
         for (int generation = 0; generation < maxGenerations; generation++) {
             int elitismCount = (int) Math.round(elitismFactor * populationSize);
@@ -171,22 +169,11 @@ public class Genetic extends BaseAlgorithm {
                 }
             }
 
-//            if (generation % 1000 == 0) {
-//                for (int i = 0; i < populationSize / 10; i++) {
-//                    Random randomAlg = new Random(instance);
-//                    Solution randomSolution = randomAlg.runAlgorithm();
-//                    newGeneration.add(randomSolution);
-//                }
-//            }
 
             newGeneration.sort(Comparator.comparingInt(Solution::getCost));
 
             if (newGeneration.getFirst().getCost() < bestSolution.getCost())
                 bestSolution = newGeneration.getFirst();
-//                counterBestSolutionPlateau = 0;
-//            } else {
-//              counterBestSolutionPlateau++;
-//            }
 
             if (evalWriter != null && configRunnerType.equals(ConfigRunnerType.EVALUATION_FILE)) {
                 try {
@@ -200,12 +187,6 @@ public class Genetic extends BaseAlgorithm {
             }
 
             currentGeneration = newGeneration;
-
-//            if (counterBestSolutionPlateau > 60) {
-//                System.out.println("No improvement for " + counterBestSolutionPlateau + " generations");
-//                bestSolution.printCost();
-//            }
-//
             System.out.println("Generation: " + generation + " Best Cost: " + bestSolution.getCost());
 
         }

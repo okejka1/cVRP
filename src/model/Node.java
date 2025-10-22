@@ -32,7 +32,4 @@ public class Node {
         return demand;
     }
 
-    public void setDemand(int demand) {
-        this.demand = demand;
-    }
 }
