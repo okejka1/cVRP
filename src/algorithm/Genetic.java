@@ -3,6 +3,7 @@ package algorithm;
 import io.Logger;
 import model.Instance;
 import model.Solution;
+import utils.Config;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,14 +18,12 @@ public class Genetic extends BaseAlgorithm {
     private double crossoverFactor;
     private double elitismFactor;
     private int tour;
-    private ConfigRunnerType configRunnerType;
 
     private final SecureRandom rand = new SecureRandom();
 
     public Genetic(Instance instance, ConfigRunnerType configRunnerType, int populationSize, double crossoverFactor, double mutationFactor,
                    double elitismFactor, int maxGenerations, int tour) {
         super(instance);
-        this.configRunnerType = configRunnerType;
         this.populationSize = populationSize;
         this.crossoverFactor = crossoverFactor;
         this.mutationFactor = mutationFactor;
@@ -45,11 +44,11 @@ public class Genetic extends BaseAlgorithm {
     }
 
 
-    private Solution mutate(Solution solution, Instance instance) {
+    private Solution mutate(Solution solution, Instance instance, double mutationSwapToInvRatioFactor) {
         Solution mutated = new Solution(solution);
         List<Integer> flatList = new ArrayList<>(mutated.getRoutes().stream().flatMap(List::stream).toList());
 
-        if (rand.nextBoolean())
+        if (Math.random() < mutationSwapToInvRatioFactor)
             // swap mutation
             flatList = perfomSwapOnFlatList(flatList, rand);
         else
@@ -104,9 +103,9 @@ public class Genetic extends BaseAlgorithm {
 
 
     @Override
-    public Solution runAlgorithm() {
+    public Solution runAlgorithm(Config config) {
         FileWriter evalWriter = null;
-        if (this.configRunnerType == ConfigRunnerType.EVALUATION_FILE) {
+        if (config.isShouldSave()) {
             evalWriter = Logger.createEvaluationFile(instance.getName(), AlgorithmType.GA);
         }
 
@@ -115,10 +114,10 @@ public class Genetic extends BaseAlgorithm {
             Solution solution;
             if (i == 0) {
                 Greedy greedy = new Greedy(instance);
-                solution = greedy.runAlgorithm();
+                solution = greedy.runAlgorithm(null);
             } else {
                 Random randomAlg = new Random(instance);
-                solution = randomAlg.runAlgorithm();
+                solution = randomAlg.runAlgorithm(null);
             }
             currentGeneration.add(solution);
         }
@@ -131,7 +130,7 @@ public class Genetic extends BaseAlgorithm {
         double avg = currentGeneration.stream().mapToDouble(Solution::getCost).average().orElse(Double.NaN);
 
 
-        if (evalWriter != null && configRunnerType.equals(ConfigRunnerType.EVALUATION_FILE)) {
+        if (evalWriter != null && config.isShouldSave()) {
             try {
                 Logger.logGeneration(evalWriter, 0, best, avg, worst);
             } catch (IOException e) {
@@ -161,7 +160,7 @@ public class Genetic extends BaseAlgorithm {
                 }
 
                 if (Math.random() < mutationFactor) {
-                    child = mutate(child, instance);
+                    child = mutate(child, instance, config.getMutationRatio());
                 }
 
                 if (uniqueSolutions.add(child)) {
@@ -175,7 +174,7 @@ public class Genetic extends BaseAlgorithm {
             if (newGeneration.getFirst().getCost() < bestSolution.getCost())
                 bestSolution = newGeneration.getFirst();
 
-            if (evalWriter != null && configRunnerType.equals(ConfigRunnerType.EVALUATION_FILE)) {
+            if (evalWriter != null && config.isShouldSave()) {
                 try {
                     best = newGeneration.getFirst().getCost();
                     worst = newGeneration.getLast().getCost();
@@ -190,8 +189,13 @@ public class Genetic extends BaseAlgorithm {
             System.out.println("Generation: " + generation + " Best Cost: " + bestSolution.getCost());
 
         }
+
         try {
-            if (evalWriter != null) evalWriter.close();
+            if (evalWriter != null) {
+                if (config.isShouldPrintBestSolution())
+                    evalWriter.write(bestSolution.toString());
+                evalWriter.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

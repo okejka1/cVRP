@@ -3,6 +3,7 @@ package algorithm;
 import model.Instance;
 import model.Node;
 import model.Solution;
+import utils.Config;
 
 import java.util.*;
 
@@ -20,7 +21,7 @@ public class Greedy extends BaseAlgorithm {
     }
 
     @Override
-    public Solution runAlgorithm() {
+    public Solution runAlgorithm(Config config) {
 
         List<Node> customers = new ArrayList<>(instance.getCities());
         customers.removeIf(n -> n.getId() == instance.getDepotId());

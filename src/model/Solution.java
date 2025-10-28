@@ -80,6 +80,19 @@ public class Solution {
         System.out.println("Cost " + cost);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < routes.size(); i++) {
+            sb.append("Route #").append(i + 1).append(": ");
+            for (int nodeId : routes.get(i)) {
+                sb.append(nodeId - 1).append(" ");
+            }
+            sb.append("\n");
+        }
+        sb.append("Cost ").append(cost);
+        return sb.toString();
+    }
 
     public void printCost() {
         System.out.println("Cost " + cost);

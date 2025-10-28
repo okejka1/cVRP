@@ -3,6 +3,7 @@ import io.Logger;
 import model.Instance;
 import model.ResultSummary;
 import model.Solution;
+import utils.Config;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,13 +22,13 @@ public class Main {
 
 
         for (Instance instance : instances) {
-            ResultSummary randomRes = testInstance(instance, AlgorithmType.RANDOM);
-            ResultSummary greedyRes = testInstance(instance, AlgorithmType.GREEDY);
-            ResultSummary saRes = testInstance(instance, AlgorithmType.SA);
+//            ResultSummary randomRes = testInstance(instance, AlgorithmType.RANDOM);
+//            ResultSummary greedyRes = testInstance(instance, AlgorithmType.GREEDY);
+//            ResultSummary saRes = testInstance(instance, AlgorithmType.SA);
             ResultSummary gaRes = testInstance(instance, AlgorithmType.GA);
 
 //          testOneInstance(instance, AlgorithmType.GA);
-            List<ResultSummary> allSummaries = List.of(randomRes, greedyRes, saRes, gaRes);
+            List<ResultSummary> allSummaries = List.of(gaRes);
 
             try {
                 Logger.saveInstanceResultsToCSV(instance.getName(), allSummaries);
@@ -37,46 +38,48 @@ public class Main {
         }
     }
 
-    private static void testOneInstance(Instance instance, AlgorithmType algorithmType) {
-        switch (algorithmType) {
-            case GA:
-                Genetic genetic = new Genetic(instance, ConfigRunnerType.EVALUATION_FILE, 200, 0.8, 0.4, 0.05, 3200, 6);
-                genetic.runAlgorithm();
-                break;
-            default:
-                break;
-        }
-
-    }
+//    private static void testOneInstance(Instance instance, AlgorithmType algorithmType) {
+//        switch (algorithmType) {
+//            case GA:
+//                Genetic genetic = new Genetic(instance, ConfigRunnerType.EVALUATION_FILE, 200, 0.8, 0.4, 0.05, 3200, 6);
+//                genetic.runAlgorithm();
+//                break;
+//            default:
+//                break;
+//        }
+//
+//    }
 
     private static ResultSummary testInstance(Instance instance, AlgorithmType algorithmType) {
         List<Solution> solutions = new ArrayList<>();
+        Config config = new Config(false, false);
         switch (algorithmType) {
             case RANDOM:
                 for (int i = 0; i < 10000; i++) {
                     Random random = new Random(instance);
-                    Solution solution = random.runAlgorithm();
+                    Solution solution = random.runAlgorithm(config);
                     solutions.add(solution);
                 }
                 break;
             case GREEDY:
                 for (int i = 0; i < instance.getCities().size() - 1; i++) {
                     Greedy greedy = new Greedy(instance, i + 1);
-                    Solution solution = greedy.runAlgorithm();
+                    Solution solution = greedy.runAlgorithm(config);
                     solutions.add(solution);
                 }
                 break;
             case SA:
                 for (int i = 0; i < 10; i++) {
-                    SimulatedAnnealing sa = new SimulatedAnnealing(instance, 10000, 1, 0.995, 200);
-                    Solution solution = sa.runAlgorithm();
+                    SimulatedAnnealing sa = new SimulatedAnnealing(instance,  10000, 1, 0.995, 200);
+                    Solution solution = sa.runAlgorithm(config);
                     solutions.add(solution);
                 }
                 break;
             case GA:
+                Config configGA =  new Config(false, true, 0.2);
                 for (int i = 0; i < 10; i++) {
-                    Genetic genetic = new Genetic(instance, ConfigRunnerType.NO_EVALUATION, 500, 0.8, 0.3, 0.05, 8000, 15);
-                    Solution solution = genetic.runAlgorithm();
+                    Genetic genetic = new Genetic(instance, ConfigRunnerType.EVALUATION_FILE, 500, 0.8, 0.3, 0.05, 5000, 15);
+                    Solution solution = genetic.runAlgorithm(configGA);
                     solutions.add(solution);
                 }
                 break;
