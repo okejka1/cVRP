@@ -2,6 +2,7 @@ package algorithm;
 
 import model.Instance;
 import model.Solution;
+import utils.Config;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -25,10 +26,9 @@ public class SimulatedAnnealing extends BaseAlgorithm {
     }
 
     @Override
-    public Solution runAlgorithm() {
-
+    public Solution runAlgorithm(Config config) {
         Greedy greedy = new Greedy(instance);
-        Solution currentSolution = greedy.runAlgorithm();
+        Solution currentSolution = greedy.runAlgorithm(null);
         Solution bestSolution = new Solution(currentSolution);
 
         double currentTemp = maxTemp;

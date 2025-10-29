@@ -3,6 +3,7 @@ package algorithm;
 import model.Instance;
 import model.Node;
 import model.Solution;
+import utils.Config;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class Random extends BaseAlgorithm {
     }
 
     @Override
-    public Solution runAlgorithm() {
+    public Solution runAlgorithm(Config config) {
         SecureRandom rand = new SecureRandom();
 
         List<Node> customers = new ArrayList<>(instance.getCities());
